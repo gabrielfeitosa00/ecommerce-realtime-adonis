@@ -21,7 +21,7 @@ class OrderSchema extends Schema {
       table
         .foreign('user_id')
         .references('id')
-        .onTable('users')
+        .inTable('users')
         .onDelete('cascade')
     })
   }

@@ -12,16 +12,15 @@ class CouponUserSchema extends Schema {
       table.integer('user_id').unsigned()
 
       table
-      .foreign('coupon_id')
-      .references('id')
-      .onTable('coupons')
-      .onDelete('cascade')
-
+        .foreign('coupon_id')
+        .references('id')
+        .inTable('coupons')
+        .onDelete('cascade')
       table
-      .foreign('user_id')
-      .references('id')
-      .onTable('user')
-      .onDelete('cascade')
+        .foreign('user_id')
+        .references('id')
+        .inTable('users')
+        .onDelete('cascade')
     })
   }
 
