@@ -5,6 +5,12 @@ const Model = use('Model')
 
 class OrderItem extends Model {
 
+
+    static get boot () {
+        super.boot()
+        this.addHook('beforeSave','OrderItemHook.updateSubvalue')
+    }
+
     static get traits() {
         return ['App/Models/Traits/NoTimestamp']
       }
