@@ -22,3 +22,4 @@ Route.get('/', () => {
 
 require('./auth.js')
 require('./admin.js')
+require('./client.js')
