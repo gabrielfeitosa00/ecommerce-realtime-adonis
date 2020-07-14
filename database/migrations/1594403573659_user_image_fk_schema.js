@@ -4,8 +4,9 @@
 const Schema = use('Schema')
 
 class UserImageFkSchema extends Schema {
-  up () {
-    this.table('users', (table) => {
+  up() {
+    this.table('users', table => {
+      // alter table
       table
         .foreign('image_id')
         .references('id')
@@ -14,8 +15,9 @@ class UserImageFkSchema extends Schema {
     })
   }
 
-  down () {
-    this.table('user_image_fks', (table) => {
+  down() {
+    this.table('users', table => {
+      // reverse alternations
       table.dropForeign('image_id')
     })
   }
