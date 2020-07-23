@@ -23,7 +23,7 @@ class CategoryController {
 
 
 
-  async index({ request, response, view, pagination }) {
+  async index({ request, response, pagination }) {
 
     const title = request.input('title')
 
@@ -62,11 +62,11 @@ class CategoryController {
     } catch (error) {
 
       return response.status(400).send({
-        
-        
-        mensage: 'Error processing your request!'
-      
-      
+
+
+        message: 'Error processing your request!'
+
+
       })
 
     }
@@ -82,9 +82,9 @@ class CategoryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params:{id}, request, response, view }) {
+  async show({ params: { id }, request, response, view }) {
 
-    const category= await Category.findOrFail(id)
+    const category = await Category.findOrFail(id)
 
     return response.send(category)
   }
@@ -97,17 +97,27 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params:{id}, request, response }) {
+  async update({ params: { id }, request, response }) {
 
-    const category= await Category.findOrFail(id)
+    const category = await Category.findOrFail(id)
+    // might remove the trycatch later
 
-    const {title,description,image_id}= request.all()
+    try {
+      const { title, description, image_id } = request.all()
 
-    category.merge({title,description,image_id})
+      category.merge({ title, description, image_id })
 
-    await category.save()
+      await category.save()
 
-    return response.send(category)
+      return response.send(category)
+
+    } catch (error) {
+      return response.status(400).send({
+        message: 'Error processing your request!'
+      })
+    }
+
+
 
   }
 
@@ -119,13 +129,18 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({ params:{id}, request, response }) {
+  async destroy({ params: { id }, request, response }) {
 
-    const category= await Category.findOrFail(id)
+    const category = await Category.findOrFail(id)
 
-    await category.delete()
+    try {
+      await category.delete()
 
-    return response.status(204).send()
+      return response.status(204).send()
+
+    } catch (error) {
+      return response.status(500).send({message : "Internal server error!"})
+    }
 
   }
 }
