@@ -4,6 +4,8 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const User = use('App/Models/User')
+
 /**
  * Resourceful controller for interacting with users
  */
@@ -17,7 +19,23 @@ class UserController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index ({ request, response, pagination }) {
+
+    const name = request.input('name')
+
+    const query = User.query()
+
+    if (name) {
+      query.where('name', 'LIKE', `%${name}%`)
+      query.orWhere('surname', 'LIKE', `%${name}%`)
+      query.orWhere('email', 'LIKE', `%${name}%`)
+    }
+
+
+
+    const users = await query.paginate(pagination.page, pagination.limit)
+
+    return response.send(users);
   }
 
 
@@ -30,6 +48,29 @@ class UserController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
+
+    try {
+
+      const userData = request.only([
+        'name',
+        'surname',
+        'email',
+        'password',
+        'image_id'
+      ])
+
+      // var user = await User.create(userData)
+      // user = await transform.item(user, Transformer)
+      // return response.status(201).send(user)
+
+      const user=await User.create(userData)
+      return response.status(201).send(user)
+      
+    } catch (error) {
+      return response.status(400).send({
+        message: 'Error processing your request!'
+      })
+    }
   }
 
   /**
@@ -41,7 +82,12 @@ class UserController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+  async show ({ params:{id}, request, response, view }) {
+    const user = await User.findOrFail(id)
+
+    return response.send(user)
+
+
   }
 
 
@@ -53,7 +99,23 @@ class UserController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update ({ params:{id}, request, response }) {
+
+    const user = await User.findOrFail(id)
+
+    const userData = request.only([
+      'name',
+      'username',
+      'email',
+      'password',
+      'image_id'
+    ])
+
+    user.merge(userData)
+
+    await user.save()
+
+    return response.send(user)
   }
 
   /**
@@ -64,7 +126,18 @@ class UserController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy ({ params:{id}, request, response }) {
+    const user = await User.findOrFail(id)
+
+    try {
+
+      await user.delete()
+
+      return response.status(204).send()
+          
+    } catch (error) {
+      return response.status(500).send({message : "Internal server error!"})
+    }
   }
 }
 
