@@ -62,7 +62,7 @@ const manage_single_upload = async (file, path = null) => {
  * @return{Object}
  */
 
-const image_multiple_uploads = async (fileJar, path = null) => {
+const manage_multiple_uploads = async (fileJar, path = null) => {
     path = path ? path : Helpers.publicPath('uploads')   // checks if the path parameter exists
     // if it doesn't exit the value of path 
     // is public/uploads
@@ -104,5 +104,5 @@ const image_multiple_uploads = async (fileJar, path = null) => {
 module.exports = {
     str_random,
     manage_single_upload,
-    image_multiple_uploads 
+    manage_multiple_uploads
 }
