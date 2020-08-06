@@ -104,6 +104,48 @@ class OrderController {
    */
   async update ({ params:{id}, request, response }) {
 
+    const order = await Order.findOrFail(id)
+
+    const trx = await Database.beginTransaction()
+
+    try {
+      const {user_id,items,status} = request.all()
+
+      order.merge({user_id,status})
+
+      //Service layer
+
+      const service = new Service(order,trx)
+
+      await service.updateItems(items)
+
+      await order.save(trx)
+
+      await trx.commit()
+
+      return response.send(order)
+
+    } catch (error) {
+      await trx.rollback()
+
+      return response.status(400).send({
+        message: 'Could not update order at this time!'
+      })
+    }
+
+
+  }
+
+  /**
+   * Delete a order with id.
+   * DELETE orders/:id
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async destroy ({ params:{id}, request, response }) {
+
     const order = await findOrFail(id)
 
     const trx = await Database.beginTransaction()
@@ -126,18 +168,7 @@ class OrderController {
         message: 'Error deleting the order!'
       })
     }
-
-  }
-
-  /**
-   * Delete a order with id.
-   * DELETE orders/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async destroy ({ params, request, response }) {
+  
   }
 }
 
