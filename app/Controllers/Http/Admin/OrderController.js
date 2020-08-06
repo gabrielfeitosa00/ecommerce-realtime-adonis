@@ -4,6 +4,9 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Order = use('App/Models/Order')
+const Database = use('Database')
+
 /**
  * Resourceful controller for interacting with orders
  */
@@ -16,8 +19,24 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {View} ctx.view
+   * @param {object} ctx.pagination
    */
-  async index ({ request, response, view }) {
+  async index ({ request, response, pagination}) {
+    const {status, id} = request.only(['status', 'id'])
+    const query = Order.query()
+
+    if(staus && id) {
+      query.where('status', status)
+      query.orWhere('id', 'LIKE', `%${id}%` )
+    } else if (status) {
+      query.where('status', status)
+    } else if (id) {
+      query.orWhere('id', 'LIKE', `%${id}%` )
+    }
+
+    const orders = await query.paginate(pagination.page, pagination.limit)
+
+    return response.send(orders)
   }
 
   
@@ -42,7 +61,9 @@ class OrderController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+  async show ({ params:{id}, request, response, view }) {
+    const order = await Order.findOrFail(id)
+    return response.send(order)
   }
 
 
@@ -54,7 +75,31 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update ({ params:{id}, request, response }) {
+
+    const order = await findOrFail(id)
+
+    const trx = await Database.beginTransaction()
+
+    try {
+      await order.items().delete(trx)
+
+      await order.coupons().delete(trx)
+
+      await order.delete(trx)
+
+      await trx.commit()
+
+      return response.status(204).send()
+
+    } catch (error) {
+      await trx.rollback()
+
+      return response.status(400).send({
+        message: 'Error deleting the order!'
+      })
+    }
+
   }
 
   /**
