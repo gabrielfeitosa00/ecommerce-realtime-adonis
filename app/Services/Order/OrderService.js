@@ -44,6 +44,21 @@ class OrderService {
 
 
     async canApplyDiscount(coupon){
+
+        // Checks discount validity by date
+
+        const now = new Date().getDate()
+
+
+        // changed the comparison sign  here
+        // if this causes problems later I will change it back 
+        if(now < coupon.valid_from.getTime() || 
+            (typeof coupon.valid_until == 'object' && coupon.valid_until.getTime() < now )) {
+                // Verifies if the coupon is inside the valid time interval
+
+                return false
+            }
+
         const couponProducts = await Database.from('coupon_products')
             .where('coupon_id', coupon.id)
             .pluck('product_id')
